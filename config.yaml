@@ -37,3 +37,10 @@ redis:
   password: ""
   db: 0
   pool_size: 100
+
+email:
+  host: "smtp.qq.com"
+  port: 465
+  username: "1007896918@qq.com"      # 发件人邮箱
+  password: "zhtyuvomganbbcei"  # SMTP 授权码（非登录密码！）
+  from_name: "jimoruchen"

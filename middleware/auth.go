@@ -3,15 +3,13 @@ package middleware
 import (
 	"context"
 	"strings"
+	"web_app/pkg"
 	"web_app/pkg/blacklist"
 	"web_app/pkg/jwt"
 	"web_app/utils"
 
 	"github.com/gin-gonic/gin"
 )
-
-const ContextUserIDKey = "UserID"
-const ContextUserNameKey = "UserName"
 
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -44,8 +42,8 @@ func JWTAuth() gin.HandlerFunc {
 			return
 		}
 		// 将用户信息存入上下文
-		c.Set(ContextUserIDKey, claims.UserID)
-		c.Set(ContextUserNameKey, claims.Username)
+		c.Set(pkg.ContextUserIDKey, claims.UserID)
+		c.Set(pkg.ContextUserNameKey, claims.Username)
 		c.Next()
 	}
 }

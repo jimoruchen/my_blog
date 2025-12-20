@@ -12,6 +12,9 @@ const (
 
 	CodeNeedLogin
 	CodeInvalidToken
+	CodeTooManyRequest
+	CodeFailedSend
+	CodeFailed
 )
 
 var codeMsg = map[ResCode]string{
@@ -23,12 +26,15 @@ var codeMsg = map[ResCode]string{
 	CodeServerBusy:      "服务繁忙",
 	CodeNeedLogin:       "需要登录",
 	CodeInvalidToken:    "无效的token",
+	CodeTooManyRequest:  "参数过多",
+	CodeFailedSend:      "验证码已过期或未发送",
+	CodeFailed:          "验证码错误",
 }
 
 func (code ResCode) Msg() string {
-	msg, ok := codeMsg[code]
+	message, ok := codeMsg[code]
 	if !ok {
 		return codeMsg[CodeServerBusy]
 	}
-	return msg
+	return message
 }

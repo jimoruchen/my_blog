@@ -1,56 +1,48 @@
 package logic
 
 import (
-	"errors"
 	"web_app/dao/mysql"
 	"web_app/models"
-	"web_app/pkg/snowflake"
 
-	"golang.org/x/crypto/bcrypt"
+	"go.uber.org/zap"
 )
 
-func SignUp(p *models.ParamSignUp) error {
-	// 1.判断用户是否存在
-	if err := mysql.CheckUserExist(p.Username); err != nil {
-		return err
-	}
-	// 2.生成UID
-	userID := snowflake.GenID()
-	// 3.密码加密构造用户实例
-	hashedPassword, err := hashPassword(p.Password)
+func GetUserInfo(id int64) (user *models.User, err error) {
+	var userErr error
+	user, err = mysql.GetUserByUserID(id)
 	if err != nil {
-		return err
+		return nil, userErr
 	}
-	user := &models.User{
-		UserID:   userID,
-		Username: p.Username,
-		Password: hashedPassword,
-	}
-	// 4.保存用户
-	return mysql.InsertUser(user)
+	return user, nil
 }
 
-func Login(p *models.ParamLogin) (user *models.User, err error) {
-	// 1. 根据用户名查用户
-	user, err = mysql.GetUserByUsernameByGorm(p.Username)
-	if err != nil {
-		if errors.Is(err, mysql.ErrorUserNotFound) {
-			return nil, mysql.ErrorUserNotFound
-		}
-		return nil, err // DB error
+func GetUserDetail(id int64, username string) (*models.UserDetail, error) {
+	userDetail := &models.UserDetail{
+		UserID:   id,
+		Username: username,
+		Gender:   0, // 默认男
+		Phone:    "",
+		QQ:       "",
+		WX:       "",
+		Desc:     "",
 	}
-	// 2. 验证密码
-	if err := VerifyPassword(user.Password, p.Password); err != nil {
-		return nil, mysql.ErrorInvalidPassword
+	result := mysql.DB.Where("user_id = ?", id).FirstOrCreate(userDetail)
+	if result.Error != nil {
+		zap.L().Error("Failed to get or create user detail", zap.Int64("user_id", id), zap.Error(result.Error))
+		return nil, result.Error
 	}
-	return user, err
+	return userDetail, nil
 }
 
-func hashPassword(password string) (string, error) {
-	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-	return string(bytes), err
-}
-
-func VerifyPassword(hashPassword, password string) error {
-	return bcrypt.CompareHashAndPassword([]byte(hashPassword), []byte(password))
+func SaveDetails(id int64, user *models.ParamUserDetails) error {
+	userDetail := &models.UserDetail{
+		UserID:   id,
+		Username: user.Username,
+		Gender:   user.Gender,
+		Phone:    user.Phone,
+		QQ:       user.QQ,
+		WX:       user.WX,
+		Desc:     user.Desc,
+	}
+	return mysql.SaveUserDetail(id, userDetail)
 }

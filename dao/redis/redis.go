@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"web_app/settings"
 
-	"github.com/redis/go-redis/v9"
+	Rdb "github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
-var RDB *redis.Client
+var RDB *Rdb.Client
 
 func Init(cfg *settings.RedisConfig) (err error) {
 	ctx := context.Background()
-	rdb := redis.NewClient(&redis.Options{
+	rdb := Rdb.NewClient(&Rdb.Options{
 		Addr: fmt.Sprintf("%s:%d",
 			cfg.Host, cfg.Port),
 		Password: cfg.Password,

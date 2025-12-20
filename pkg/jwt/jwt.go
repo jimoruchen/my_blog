@@ -19,8 +19,9 @@ type MyClaims struct {
 var mySecret = []byte(settings.Conf.JWTSecret) // 从配置文件读取密钥
 
 // GenToken 生成 JWT
-func GenToken(userID int64, username string) (accessToken, jti string, err error) {
-	jti = uuid.New().String()
+func GenToken(userID int64, username string) (accessToken string, expireTime time.Time, err error) {
+	jti := uuid.New().String()
+	expireTime = time.Now().Add(time.Duration(settings.Conf.JWTExpire) * time.Hour)
 	claims := MyClaims{
 		UserID:   userID,
 		Username: username,
@@ -34,10 +35,10 @@ func GenToken(userID int64, username string) (accessToken, jti string, err error
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	accessToken, err = token.SignedString(mySecret)
 	if err != nil {
-		return "", "", err
+		return "", time.Time{}, err
 	}
 
-	return accessToken, jti, nil
+	return accessToken, expireTime, nil
 }
 
 // ParseToken 解析 JWT
